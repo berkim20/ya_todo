@@ -33,19 +33,21 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
   DateTime _cachedDate = DateTime.now();
   late TextEditingController myController;
   //String desc = '';
-  bool isButtonActive = true;
-  String thisPriority = "";
+  bool isSaveButtonActive = true;
+  bool isDeleteButtonActive = true;
+  String thisPriority = "no";
 
   @override
   void initState() {
     //_value = widget.pickedDate != null;
     _value = false;
     super.initState();
+    thisPriority = widget.item.priority;
     myController = TextEditingController();
     myController.text = widget.isEditing ? widget.item.description : myController.text;
     myController.addListener(() {
       final isButtonActive = myController.text.isNotEmpty;
-      setState(() => this.isButtonActive = isButtonActive);
+      setState(() => this.isSaveButtonActive = isButtonActive);
     });
 
   }
@@ -86,14 +88,14 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                     if (_value) {
                       final item = TodoItem(
                           description: myController.text,
-                          priority: "no",
+                          priority: thisPriority,
                           deadline: widget.pickedDate,
                           completed: widget.isEditing ? widget.item.completed : false);
                       Navigator.pop(context, item);
                     } else {
                       final item = TodoItem(
                           description: myController.text,
-                          priority: "no",
+                          priority: thisPriority,
                           completed: widget.isEditing ? widget.item.completed : false);
                       Navigator.pop(context, item);
                     }
@@ -210,13 +212,26 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                             onSelected: (value) {
                             if (value == 0) {
                               print('zero');
+                              setState(() {
+                                thisPriority = "no";
+                              });
+
                             }
                             if (value == 1) {
                               print('1');
+                              setState(() {
+                                thisPriority = "low";
+                              });
+                              //thisPriority = "low";
                             }
                             if (value == 2) {
                               print('2');
+                              // thisPriority = "high";
+                              setState(() {
+                                thisPriority = "high";
+                              });
                             }
+
                             },
                             // child: Text(widget.isEditing ? () {
                             //   if (widget.item.priority == "no") {
@@ -240,7 +255,10 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                             //     AppLocalizations.of(context)!.high
                             //     }
                             // }  : AppLocalizations.of(context)!.no)
-                            child: Text(widget.isEditing ? widget.item.priority : AppLocalizations.of(context)!.no)
+                            //child: Text(widget.isEditing ? widget.item.priority : AppLocalizations.of(context)!.no)
+                            child: Text(thisPriority == "no" ? AppLocalizations.of(context)!.no :
+                            thisPriority == "low" ? AppLocalizations.of(context)!.low :
+                            AppLocalizations.of(context)!.high)
                           ),
 
                         ],
@@ -403,7 +421,7 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                         children: [
                             Icon(
                               Icons.delete,
-                              color: Colors.red,
+                              color: widget.isEditing ? Colors.red : Colors.grey,
                             ),
                             const SizedBox(
                               width: 12,
@@ -411,12 +429,19 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                           Text(
                             AppLocalizations.of(context)!.delete,
                             style: TextStyle(
-                              color: Colors.red
+                              color: widget.isEditing ? Colors.red : Colors.grey
                             ),
                           )
                         ],
                       ),
-                      onPressed: () async => Navigator.pop(context),
+                      onPressed: !widget.isEditing ? null : () async {
+                        final item = TodoItem(
+                            description: myController.text,
+                            priority: "delete",
+                            deadline: widget.pickedDate,
+                            completed: widget.isEditing ? widget.item.completed : false);
+                        Navigator.pop(context, item);
+                      }
                     ),
                   ),
                   const SizedBox(

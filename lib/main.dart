@@ -588,12 +588,16 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                   isEditing: true
                                 )));
                         //item = data;
-                        setState(() {
-                          item.description = data.description;
-                          item.priority = data.priority;
-                          item.completed = data.completed;
-                          item.deadline = data.deadline;
-                        });
+                        if (data.priority == "delete") {
+                          deleteTask(index);
+                        } else {
+                          setState(() {
+                            item.description = data.description;
+                            item.priority = data.priority;
+                            item.completed = data.completed;
+                            item.deadline = data.deadline;
+                          });
+                        }
                       },
                     ),
             ),
