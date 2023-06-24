@@ -1,16 +1,9 @@
 # mx
 
-A new Flutter project.
+Yandex Flutter School Todo App
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![Screenshot_1687581921](https://github.com/berkim20/ya_todo/assets/33852124/2ccfa04a-7fd5-4c2e-badf-1e8e6afd64db)
+![Screenshot_1687581910](https://github.com/berkim20/ya_todo/assets/33852124/bda0fdfc-5505-4249-a262-e75e76782b91)
