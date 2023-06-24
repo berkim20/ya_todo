@@ -408,6 +408,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:mx/newtask.dart';
+import 'package:mx/l10n/l10n.dart';
+import "package:flutter_gen/gen_l10n/app_localizations.dart";
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mx/todoitem.dart';
 
 void main() {
   runApp(TodoApp());
@@ -421,6 +425,14 @@ class TodoApp extends StatelessWidget {
       theme: ThemeData(
         //primarySwatch: Colors.blue,
       ),
+      supportedLocales: L10n.all,
+      locale: const Locale('ru'),
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate
+      ],
       home: TodoListScreen(),
     );
   }
@@ -429,13 +441,21 @@ class TodoApp extends StatelessWidget {
 class TodoListScreen extends StatefulWidget {
   @override
   _TodoListScreenState createState() => _TodoListScreenState();
+
+  //TodoItem(description: 'Task 1', priority: "no", completed: false)
+  final fakeItem = TodoItem(
+      description: 'fake',
+      priority: "no",
+      completed: false);
 }
+
+
 
 class _TodoListScreenState extends State<TodoListScreen> {
   List<TodoItem> _todoItems = [
-    TodoItem(description: 'Task 1', completed: false),
-    TodoItem(description: 'Task 2', completed: true),
-    TodoItem(description: 'Task 3', completed: false),
+    TodoItem(description: 'Task 1', priority: "no", completed: false),
+    TodoItem(description: 'Task 2', priority: "low",completed: true),
+    TodoItem(description: 'Task 3', priority: "high", completed: false),
   ];
 
   bool _showCompletedTasks = false;
@@ -472,7 +492,7 @@ class _TodoListScreenState extends State<TodoListScreen> {
         children: [
           SizedBox(height: 130),
           Text(
-            'Мои дела',
+            AppLocalizations.of(context)!.myTodos,
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
@@ -485,7 +505,8 @@ class _TodoListScreenState extends State<TodoListScreen> {
                 height: 15,
               ),
               Text(
-                'Выполнено - ${_todoItems.where((item) => item.completed).length}',
+                //'Выполнено - ${_todoItems.where((item) => item.completed).length}',
+                AppLocalizations.of(context)!.done(_todoItems.where((item) => item.completed).length),
                 style: TextStyle(
                   color: Colors.grey,
                 ),
@@ -558,8 +579,21 @@ class _TodoListScreenState extends State<TodoListScreen> {
                                 : TextDecoration.none)),
           trailing: IconButton(
                       icon: Icon(Icons.info),
-                      onPressed: () {
-
+                      onPressed: () async {
+                        TodoItem data = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => CreateTodoScreen(
+                                  item: item,
+                                  isEditing: true
+                                )));
+                        //item = data;
+                        setState(() {
+                          item.description = data.description;
+                          item.priority = data.priority;
+                          item.completed = data.completed;
+                          item.deadline = data.deadline;
+                        });
                       },
                     ),
             ),
@@ -567,23 +601,19 @@ class _TodoListScreenState extends State<TodoListScreen> {
         },
       ),),]),
     floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final data = await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => CreateTodoScreen()));
+                  builder: (context) => CreateTodoScreen(item: widget.fakeItem, isEditing: false)));
+          setState(() {
+            _todoItems.add(data);
+          });
+
         },
         tooltip: 'Increment',
-        child: Icon(Icons
-            .add), // This trailing comma makes auto-formatting nicer for build methods.
+        child: Icon(Icons.add), // This trailing comma makes auto-formatting nicer for build methods.
       ),
     );
   }
-}
-
-class TodoItem {
-  String description;
-  bool completed;
-
-  TodoItem({required this.description, required this.completed});
 }

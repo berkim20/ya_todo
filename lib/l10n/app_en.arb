@@ -1,0 +1,19 @@
+{
+    "myTodos": "My tasks",
+    "done": "Done — {count}",
+    "newItem": "New",
+    "save": "SAVE",
+    "importance": "Priority",
+    "no": "No",
+    "low": "Low",
+    "high": "!! High",
+    "doToDate": "Do until",
+    "cancel": "CANCEL",
+    "ready": "DONE",
+    "delete": "Delete",
+    "doSmth": "What I have to do…",
+    "date": "date",
+    "confirm": "Do you want to delete the task?",
+    "remove": "DELETE",
+    "emptyFieldError": "The field shouldn't be empty"
+}
