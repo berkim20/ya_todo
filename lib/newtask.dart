@@ -3,21 +3,24 @@ import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import 'package:mx/date_time_ext.dart';
 import 'package:intl/intl.dart';
 import 'package:mx/todoitem.dart';
+import 'package:mx/utils/sql_helper.dart';
 
 /// screen for creating or viewing created To do item
 class CreateTodoScreen extends StatefulWidget{
   final TodoItem item;
   final bool isEditing;
+  final int nextid;
 
   CreateTodoScreen ({
     Key? key,
     required this.isEditing,
-    required this.item
+    required this.item,
+    required this.nextid
 }) : super(key: key);
 
+
+
   DateTime? pickedDate = DateTime.now();
-
-
 
   /// callback when date is changes or deleted
   //void Function(DateTime?) onDatePick();
@@ -49,10 +52,16 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
       final isButtonActive = myController.text.isNotEmpty;
       setState(() => this.isSaveButtonActive = isButtonActive);
     });
-
+    widget.pickedDate = widget.item.deadline ?? DateTime.now();
   }
 
 
+
+  Future<void> _deleteItem(int id) async {
+    await SQLHelper.deleteItem(
+      id,
+    );
+  }
 
   @override
   void dispose() {
@@ -63,7 +72,6 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //widget.pickedDate = widget.item.deadline ?? DateTime.now();
     //myController.text = widget.isEditing ? widget.item.description : myController.text;
     //final todo = ref.watch(todoProvider(id));
     return Scaffold(
@@ -84,16 +92,23 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: myController.text.isEmpty ? null : () {
+                  onPressed: myController.text.isEmpty ? null : () async {
                     if (_value) {
+                      //if (!widget.isEditing) idx = _addItem() as int;
+                      print(widget.pickedDate);
                       final item = TodoItem(
+                          id : widget.nextid,
                           description: myController.text,
                           priority: thisPriority,
                           deadline: widget.pickedDate,
                           completed: widget.isEditing ? widget.item.completed : false);
+                      // Navigator.pop(context);
                       Navigator.pop(context, item);
                     } else {
+                      // Navigator.pop(context, item);
+                      //if (!widget.isEditing) idx = _addItem() as int;
                       final item = TodoItem(
+                          id : widget.nextid,
                           description: myController.text,
                           priority: thisPriority,
                           completed: widget.isEditing ? widget.item.completed : false);
@@ -436,6 +451,7 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                       ),
                       onPressed: !widget.isEditing ? null : () async {
                         final item = TodoItem(
+                            id : 3,
                             description: myController.text,
                             priority: "delete",
                             deadline: widget.pickedDate,

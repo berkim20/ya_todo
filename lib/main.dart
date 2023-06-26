@@ -406,14 +406,22 @@
 //   }
 // }
 
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
+import 'package:mx/date_time_ext.dart';
 import 'package:mx/newtask.dart';
 import 'package:mx/l10n/l10n.dart';
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mx/todoitem.dart';
+import 'package:mx/utils/sql_helper.dart';
+import 'package:intl/intl.dart';
 
-void main() {
+void main() async {
+  // WidgetsFlutterBinding.ensureInitialized();
+  // await ItemsPreferences.init();
+
   runApp(TodoApp());
 }
 
@@ -444,19 +452,66 @@ class TodoListScreen extends StatefulWidget {
 
   //TodoItem(description: 'Task 1', priority: "no", completed: false)
   final fakeItem = TodoItem(
+      id : 0,
       description: 'fake',
       priority: "no",
       completed: false);
 }
 
+  var cmp = false;
 
 
 class _TodoListScreenState extends State<TodoListScreen> {
-  List<TodoItem> _todoItems = [
-    TodoItem(description: 'Task 1', priority: "no", completed: false),
-    TodoItem(description: 'Task 2', priority: "low",completed: true),
-    TodoItem(description: 'Task 3', priority: "high", completed: false),
-  ];
+  // List<TodoItem> _todoItems = [
+  //   TodoItem(description: 'Task 1', priority: "no", completed: false),
+  //   TodoItem(description: 'Task 2', priority: "low",completed: true),
+  //   TodoItem(description: 'Task 3', priority: "high", completed: false),
+  // ];
+  List<TodoItem> _todoItems = [];
+  List<Map<String, dynamic>> _journals = [];
+  bool _isloading = true;
+  void _refreshitems() async {
+    final data = await SQLHelper.getItems();
+    setState(() {
+      _journals = data;
+      _isloading = false;
+    });
+    _todoItems.clear();
+    print(_journals);
+    for (var i = 0; i < data.length;i++) {
+      //_todoItems.add(value)
+      //print(data[i]["id"]);
+      //DateTime datex = DateTime.parse(data[i]["date"] as String);
+      DateTime? datex;
+      try {
+        DateTime datex = new DateFormat("dd MMMM yyyy").parse(data[i]["date"] as String);
+      } catch (e) {
+      }
+      if (data[i]["completed"] == "true") {
+        cmp = true;
+      } else cmp = false;
+      final parse = TodoItem(id: data[i]["id"] as int,
+          description: data[i]["description"] as String,
+          priority: data[i]["priority"] as String,
+          deadline: datex,
+          completed: cmp
+      );
+      _todoItems.add(parse);
+    }
+  }
+
+  Future<void> _updateCompleted(int id, String completed) async {
+    await SQLHelper.updateCompleted(
+        id,
+        completed
+    );
+  }
+
+  Future<void> _deleteItem(int id) async {
+    await SQLHelper.deleteItem(
+        id,
+    );
+  }
 
   bool _showCompletedTasks = false;
 
@@ -467,19 +522,51 @@ class _TodoListScreenState extends State<TodoListScreen> {
     });
   }
 
+  Future<void> _updateItem(int id, String description, String priority, String date, String completed) async {
+    await SQLHelper.updateItem(
+        id,
+        description,
+        priority,
+        date,
+        completed
+    );
+  }
+
   void markAsCompleted(int index) {
     setState(() {
       _todoItems[index].completed = true;
+      //item.completed = newValue!;
+      // if (_todoItems[index].completed == false)
+      //   _updateCompleted(_todoItems[index].id, 'false');
+      // if (newValue == true)
+        _updateCompleted(_todoItems[index].id, 'true');
+
     });
+  }
+
+  Future<void> _addItem(String description, String priority, DateTime? date, bool completed) async {
+    // print(myController.text);
+    // print(thisPriority);
+    // print(widget.pickedDate.getFormattedTime(Intl.getCurrentLocale()));
+    // print(widget.item.completed);
+    await SQLHelper.createItem(
+        description, priority, date, completed
+    );
   }
 
   void deleteTask(int index) {
     setState(() {
+      _deleteItem(_todoItems[index].id);
       _todoItems.removeAt(index);
     });
   }
 
   bool visible = false;
+
+  @override void initState() {
+    super.initState();
+    _refreshitems();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -569,6 +656,11 @@ class _TodoListScreenState extends State<TodoListScreen> {
                       onChanged: (newValue) {
                         setState(() {
                           item.completed = newValue!;
+                          if (newValue == false)
+                          _updateCompleted(item.id, 'false');
+                          if (newValue == true)
+                            _updateCompleted(item.id, 'true');
+
                         });
                       },
                     ),
@@ -585,19 +677,31 @@ class _TodoListScreenState extends State<TodoListScreen> {
                             MaterialPageRoute(
                                 builder: (context) => CreateTodoScreen(
                                   item: item,
-                                  isEditing: true
+                                  isEditing: true,
+                                  nextid: _todoItems.length,
                                 )));
                         //item = data;
-                        if (data.priority == "delete") {
-                          deleteTask(index);
-                        } else {
-                          setState(() {
-                            item.description = data.description;
-                            item.priority = data.priority;
-                            item.completed = data.completed;
-                            item.deadline = data.deadline;
-                          });
+                        if (data != null) {
+                          if (data.priority == "delete") {
+                            deleteTask(index);
+                          } else {
+                            String datex = data.deadline.getFormattedTime(Intl.getCurrentLocale());
+                            print(datex);
+                            String cmpUpdate = "";
+                            setState(() {
+                              _todoItems[index].description = data.description;
+                              _todoItems[index].priority = data.priority;
+                              _todoItems[index].completed = data.completed;
+                              _todoItems[index].deadline = data.deadline;
+                              //DateTime datex = new DateFormat("dd MMMM yyyy").parse(data.["date"] as String);
+                              if (data.completed == true) {
+                                cmpUpdate = "true";
+                              } else {cmpUpdate = "false"; }
+                              _updateItem(item.id, item.description, item.priority, datex, cmpUpdate);
+                            });
+                          }
                         }
+
                       },
                     ),
             ),
@@ -606,13 +710,23 @@ class _TodoListScreenState extends State<TodoListScreen> {
       ),),]),
     floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final data = await Navigator.push(
+          TodoItem data = await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => CreateTodoScreen(item: widget.fakeItem, isEditing: false)));
-          setState(() {
-            _todoItems.add(data);
-          });
+                  builder: (context) => CreateTodoScreen(item: widget.fakeItem,
+                      isEditing: false,
+                      nextid: _todoItems.length)));
+          if (data != null) {
+            setState(() {
+              _todoItems.add(data);
+              _addItem(data.description, data.priority, data.deadline, data.completed);
+            });
+          }
+
+          // Navigator.push(
+          //         context,
+          //         MaterialPageRoute(
+          //             builder: (context) => CreateTodoScreen(item: widget.fakeItem, isEditing: false)));
 
         },
         tooltip: 'Increment',
