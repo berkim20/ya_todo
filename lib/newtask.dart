@@ -18,32 +18,21 @@ class CreateTodoScreen extends StatefulWidget{
     required this.nextid
 }) : super(key: key);
 
-
-
-  DateTime? pickedDate = DateTime.now();
-
-  /// callback when date is changes or deleted
-  //void Function(DateTime?) onDatePick();
-
   @override
   _CreateTodoScreen createState() => _CreateTodoScreen();
 }
-
-
 
 class _CreateTodoScreen extends State<CreateTodoScreen> {
   late bool _value;
   DateTime _cachedDate = DateTime.now();
   late TextEditingController myController;
-  //String desc = '';
   bool isSaveButtonActive = true;
   bool isDeleteButtonActive = true;
   String thisPriority = "no";
+  DateTime? pickedDate = DateTime.now();
 
   @override
   void initState() {
-    //_value = widget.pickedDate != null;
-    _value = false;
     super.initState();
     thisPriority = widget.item.priority;
     myController = TextEditingController();
@@ -52,10 +41,9 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
       final isButtonActive = myController.text.isNotEmpty;
       setState(() => this.isSaveButtonActive = isButtonActive);
     });
-    widget.pickedDate = widget.item.deadline ?? DateTime.now();
+    pickedDate = widget.item.deadline ?? DateTime.now();
+    _value = widget.item.deadline != null;
   }
-
-
 
   Future<void> _deleteItem(int id) async {
     await SQLHelper.deleteItem(
@@ -65,14 +53,12 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
     myController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    //myController.text = widget.isEditing ? widget.item.description : myController.text;
     //final todo = ref.watch(todoProvider(id));
     return Scaffold(
       body: CustomScrollView(
@@ -94,19 +80,14 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                 TextButton(
                   onPressed: myController.text.isEmpty ? null : () async {
                     if (_value) {
-                      //if (!widget.isEditing) idx = _addItem() as int;
-                      print(widget.pickedDate);
                       final item = TodoItem(
                           id : widget.nextid,
                           description: myController.text,
                           priority: thisPriority,
-                          deadline: widget.pickedDate,
+                          deadline: pickedDate,
                           completed: widget.isEditing ? widget.item.completed : false);
-                      // Navigator.pop(context);
                       Navigator.pop(context, item);
                     } else {
-                      // Navigator.pop(context, item);
-                      //if (!widget.isEditing) idx = _addItem() as int;
                       final item = TodoItem(
                           id : widget.nextid,
                           description: myController.text,
@@ -115,20 +96,10 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                       Navigator.pop(context, item);
                     }
                   },
-                  // onPressed: () {
-                  //   if (desc.isEmpty) {
-                  //     null;
-                  //   } else {
-                  //     final item = TodoItem(
-                  //         description: "New", priority: "no", completed: false);
-                  //     Navigator.pop(context, item);
-                  //   }
-                  // },
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        //"СОХРАНИТЬ",
                         AppLocalizations.of(context)!.save,
                       )
                     ],
@@ -153,7 +124,6 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                         decoration: InputDecoration(
                           hintText: AppLocalizations.of(context)!.doSmth
                         ),
-                        //initialValue: widget.isEditing ? widget.item.description : '',
                         validator: (value) {
                           if ((value ?? '').trim().isEmpty) {
                             return AppLocalizations.of(context)!.emptyFieldError;
@@ -184,39 +154,6 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                           const SizedBox(
                             height: 4,
                           ),
-                          // PopupMenuButton<Priority>(
-                          //   initialValue: priority,
-                          //   onSelected: onChange,
-                          //   itemBuilder: (BuildContext context) => <PopupMenuEntry<Priority>>[
-                          //     PopupMenuItem<Priority>(
-                          //       value: Priority.no,
-                          //       textStyle: Theme.of(context).popupMenuTheme.textStyle?.copyWith(
-                          //         color: Theme.of(context).extension<AppColors>()?.primary,
-                          //       ),
-                          //       child: Text(Priority.no.text(context)),
-                          //     ),
-                          //     PopupMenuItem<Priority>(
-                          //       value: Priority.low,
-                          //       textStyle: Theme.of(context).popupMenuTheme.textStyle?.copyWith(
-                          //         color: Theme.of(context).extension<AppColors>()?.primary,
-                          //       ),
-                          //       child: Text(Priority.low.text(context)),
-                          //     ),
-                          //     PopupMenuItem<Priority>(
-                          //       value: Priority.hight,
-                          //       textStyle: Theme.of(context).popupMenuTheme.textStyle?.copyWith(
-                          //         color: Theme.of(context).extension<AppColors>()?.red,
-                          //       ),
-                          //       child: Text(Priority.hight.text(context)),
-                          //     ),
-                          //   ],
-                          //   child: Text(
-                          //     priority.text(context),
-                          //     style: AppTextStyle.sub.copyWith(
-                          //       color: priority.textColor(context),
-                          //     ),
-                          //   ),
-                          // ),
                           PopupMenuButton(itemBuilder: (context) {
                             return [
                               PopupMenuItem<int>(value: 0, child: Text(AppLocalizations.of(context)!.no)),
@@ -226,56 +163,27 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                           },
                             onSelected: (value) {
                             if (value == 0) {
-                              print('zero');
                               setState(() {
                                 thisPriority = "no";
                               });
 
                             }
                             if (value == 1) {
-                              print('1');
                               setState(() {
                                 thisPriority = "low";
                               });
-                              //thisPriority = "low";
                             }
                             if (value == 2) {
-                              print('2');
-                              // thisPriority = "high";
                               setState(() {
                                 thisPriority = "high";
                               });
                             }
 
                             },
-                            // child: Text(widget.isEditing ? () {
-                            //   if (widget.item.priority == "no") {
-                            //     AppLocalizations.of(context)!.no;
-                            //   }
-                            //   if (widget.item.priority == "low") {
-                            //     AppLocalizations.of(context)!.low;
-                            //   }
-                            //   if (widget.item.priority == "high") {
-                            //     AppLocalizations.of(context)!.high;
-                            //   }
-                            // } : "het"),
-                            // child: Text(widget.isEditing ? () {
-                            //     if (widget.item.priority == "no") {
-                            //       AppLocalizations.of(context)!.no
-                            //     }
-                            //     else if (widget.item.priority == "low") {
-                            //     AppLocalizations.of(context)!.low
-                            //   }
-                            //   else if (widget.item.priority == "high") {
-                            //     AppLocalizations.of(context)!.high
-                            //     }
-                            // }  : AppLocalizations.of(context)!.no)
-                            //child: Text(widget.isEditing ? widget.item.priority : AppLocalizations.of(context)!.no)
                             child: Text(thisPriority == "no" ? AppLocalizations.of(context)!.no :
                             thisPriority == "low" ? AppLocalizations.of(context)!.low :
                             AppLocalizations.of(context)!.high)
                           ),
-
                         ],
                       ),
                     ),
@@ -302,9 +210,6 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                           children: [
                             Text(
                               AppLocalizations.of(context)!.doToDate,
-                              // style: AppTextStyle.body.copyWith(
-                              //   color: Theme.of(context).extension<AppColors>()?.primary,
-                              // ),
                             ),
                             AnimatedCrossFade(
                               duration: const Duration(milliseconds: 200),
@@ -323,9 +228,8 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                                   GestureDetector(
                                     onTap: () async {
                                       final newDate = await showDatePicker(
-                                        //locale: const Locale('ru'),
                                         context: context,
-                                        initialDate: widget.pickedDate ?? DateTime.now(),
+                                        initialDate: pickedDate ?? DateTime.now(),
                                         firstDate: DateTime.now(),
                                         lastDate: DateTime.now().add(
                                           const Duration(days: 365),
@@ -337,42 +241,21 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                                         },
                                         builder: (context, child) => Theme(
                                           data: Theme.of(context).copyWith(
-                                            // colorScheme:
-                                            // Theme.of(context).colorScheme.copyWith(
-                                            //   primary: Theme.of(context)
-                                            //       .extension<AppColors>()
-                                            //       ?.blue,
-                                            //   onPrimary: Theme.of(context)
-                                            //       .extension<AppColors>()
-                                            //       ?.primary,
-                                            //   surface: Theme.of(context)
-                                            //       .extension<AppColors>()
-                                            //       ?.blue,
-                                            //   onSurface: Theme.of(context)
-                                            //       .extension<AppColors>()
-                                            //       ?.primary, // body text color
-                                            // ),
                                           ),
                                           child: child!,
                                         ),
                                       ).then((value) {
                                         setState(() {
-                                          widget.pickedDate = value!;
+                                          pickedDate = value!;
                                         });
                                       });
                                       if (newDate != null) {
                                         _cachedDate = newDate;
                                       }
-                                      // widget.onDatePick(
-                                      //   newDate ?? _cachedDate,
-                                      // );
                                     },
                                     child: Text(
-                                      widget.pickedDate
+                                      pickedDate
                                           .getFormattedTime(Intl.getCurrentLocale()),
-                                      // style: AppTextStyle.sub.copyWith(
-                                      //   color: Theme.of(context).extension<AppColors>()?.blue,
-                                      // ),
                                     ),
                                   )
                                 ],
@@ -380,34 +263,9 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                             ),
                           ],
                         ),
-                        // MySwitchWidget(
-                        //   value: _value,
-                        //   onChanged: (bool value) {
-                        //     if (value) {
-                        //       widget.onDatePick(_cachedDate);
-                        //     } else {
-                        //       widget.onDatePick(null);
-                        //     }
-                        //     setState(() {
-                        //       _value = value;
-                        //     });
-                        //   },
-                        // )
                         Switch.adaptive(
-                          // activeTrackColor:
-                          // Theme.of(context).extension<AppColors>()?.blue?.withOpacity(0.3),
-                          // inactiveTrackColor:
-                          // Theme.of(context).extension<AppColors>()?.supportOverlay,
-                          // inactiveThumbColor:
-                          // Theme.of(context).extension<AppColors>()?.backElevated,
-                          // activeColor: Theme.of(context).extension<AppColors>()?.blue,
                           value: _value,
                           onChanged: (bool value) {
-                            // if (value) {
-                            //   widget.onDatePick(_cachedDate);
-                            // } else {
-                            //   widget.onDatePick(null);
-                            // }
                             setState(() {
                               _value = value;
                             });
@@ -454,7 +312,7 @@ class _CreateTodoScreen extends State<CreateTodoScreen> {
                             id : 3,
                             description: myController.text,
                             priority: "delete",
-                            deadline: widget.pickedDate,
+                            deadline: pickedDate,
                             completed: widget.isEditing ? widget.item.completed : false);
                         Navigator.pop(context, item);
                       }

@@ -8,10 +8,6 @@ extension DateFormating on DateTime? {
     return DateFormat('dd MMMM yyyy', locale).format(this!);
   }
 
-  // DateTime returnFormattedTime(String date) {
-  //   return DateTime.parse(date, 'en').format('dd MMMM yyyy');
-  // }
-
   /// format date in to dd MMMM  string
   String getShortFormat(String locale) {
     if (this == null) return '';

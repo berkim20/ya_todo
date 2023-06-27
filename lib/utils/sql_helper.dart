@@ -16,7 +16,6 @@ class SQLHelper {
       """);
   }
 
-
   static Future<sql.Database> db() async {
     return sql.openDatabase(
       'dbtech.db',
@@ -27,7 +26,6 @@ class SQLHelper {
     );
   }
 
-  // Create new item (journal)
   static Future<int> createItem(String description, String priority, DateTime? date, bool completed) async {
     final db = await SQLHelper.db();
 
@@ -43,11 +41,6 @@ class SQLHelper {
     return id;
   }
 
-  // Read all items (journals)
-  // static Future<List<Map<String, dynamic>>> getItems() async {
-  //   final db = await SQLHelper.db();
-  //   return db.query('items', orderBy: "id");
-  // }
   static Future<List<Map<String, Object?>>> getItems() async {
     final db = await SQLHelper.db();
     return db.query('items', orderBy: "id");
